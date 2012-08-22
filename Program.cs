@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CommandLine;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.StorageClient;
@@ -29,22 +30,51 @@ namespace BlobUtility
 			var client = account.CreateCloudBlobClient();
 			var container = client.GetContainerReference(options.Container);
 
-			// Resolve Files
-			var files = new List<string>();
+			// Resolve Sources
+			var files = new List<FileInfo>();
 			var workingDirectoryUri = new Uri(string.Format("{0}/", Environment.CurrentDirectory), UriKind.Absolute);
-			foreach(var file in options.Files)
-				files.AddRange(Directory.GetFiles(Environment.CurrentDirectory, file));
+			foreach (var file in options.Sources) {
+				if (Path.IsPathRooted(file))
+					files.Add(new FileInfo(file));
+				else
+					files.AddRange(Directory.GetFiles(Environment.CurrentDirectory, file).Select(x => new FileInfo(x)));
+			}
 
 			// Perform Upload
 			_log.Info(string.Format("Uploading {0} file(s)", files.Count));
-			foreach(var file in files) {
-				var fileUri = new Uri(file, UriKind.Absolute);
-				var relativePath = workingDirectoryUri.MakeRelativeUri(fileUri);
-				var uploadPath = Path.Combine(options.Directory ?? string.Empty, relativePath.ToString()).Replace("\\", "/");
+			foreach(var fileInfo in files) {
+				// Calculate Paths
+				var directory = fileInfo.Directory;
+				if (directory == null)
+					throw new ArgumentException(string.Format("Invalid directory for file: {0}", fileInfo.FullName));
+
+				var uploadPath = Path.Combine(options.Directory, fileInfo.Name).Replace("\\", "/");
+
+				// If our upload Directory has an extension, then we mean to write out this file with that exact path
+				if (Path.HasExtension(options.Directory)) {
+					if (files.Count > 1)
+						throw new ArgumentException("Cannot specify an exact filename to upload to (-d) with multiple files");
+
+					uploadPath = options.Directory;
+				}
+
 				var blob = container.GetBlobReference(uploadPath);
 
-				_log.Info(string.Format("Uploading {0} to {1}", relativePath, uploadPath));
-				blob.UploadFile(file);
+				// Blob existance check?
+				if (!options.Force) {
+					try {
+						// Fetch Attributes (and checks to see if Blob exists)
+						blob.FetchAttributes();
+
+						// If this succeeded, our Blob already exists
+						throw new ArgumentException(string.Format("Blob already exists: {0}", uploadPath));
+					} catch (StorageClientException) {
+						// Ignored - Blob does not exist
+					}
+				}
+
+				_log.Info(string.Format("Uploading {0} to {1}", fileInfo, uploadPath));
+				blob.UploadFile(fileInfo.FullName);
 			}
 
 			_log.Info("Finished uploading");
