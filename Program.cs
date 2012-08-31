@@ -30,6 +30,31 @@ namespace BlobUtility
 			var client = account.CreateCloudBlobClient();
 			var container = client.GetContainerReference(options.Container);
 
+			// Fetch API Version?
+			if (options.GetApiVersion) {
+				var properties = client.GetServiceProperties();
+				_log.Info("Service Properties:");
+				_log.Info(string.Format("Default Service (API) Version: {0}", properties.DefaultServiceVersion));
+				return 0;
+			}
+
+			// Set API Version?
+			if (!string.IsNullOrEmpty(options.SetApiVersion)) {
+				var properties = client.GetServiceProperties();
+				var version = options.SetApiVersion == "reset" ? null : options.SetApiVersion;
+				_log.Info(string.Format("Updating API Version from {0} to {1}", properties.DefaultServiceVersion, version));
+				properties.DefaultServiceVersion = version;
+				client.SetServiceProperties(properties);
+				_log.Info("Updated Ok");
+				return 0;
+			}
+
+			// Source is Required
+			if (options.Sources == null) {
+				Console.WriteLine(options.GetUsage());
+				return 0;
+			}
+
 			// Resolve Sources
 			var files = new List<FileInfo>();
 			foreach (var file in options.Sources) {

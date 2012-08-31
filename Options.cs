@@ -14,7 +14,7 @@ namespace BlobUtility
 		[Option("c", "container", HelpText = "Blob storage Container Name.", Required = true)]
 		public string Container { get; set; }
 
-		[OptionArray("s", "source", HelpText = "Specifies the local files/directories to upload.", Required = true)]
+		[OptionArray("s", "source", HelpText = "Specifies the local files/directories to upload.")]
 		public string[] Sources { get; set; }
 
 		[Option("d", "destination", DefaultValue = "", HelpText = "Specifies the destination filename/directory to upload to.")]
@@ -25,6 +25,12 @@ namespace BlobUtility
 
 		[Option(null, "brief", DefaultValue = false, HelpText = "Show minimal backup progress log information.")]
 		public bool Brief { get; set; }
+
+		[Option(null, "getDefaultServiceVersion", DefaultValue = false, HelpText = "Display the current default Service (API) Version for the storage service.")]
+		public bool GetApiVersion { get; set; }
+
+		[Option(null, "setDefaultServiceVersion", DefaultValue = null, HelpText = "Change the default Service (API) Version for the storage service.")]
+		public string SetApiVersion { get; set; }
 
 		[HelpOption]
 		public string GetUsage()
