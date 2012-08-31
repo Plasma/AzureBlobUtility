@@ -32,7 +32,6 @@ namespace BlobUtility
 
 			// Resolve Sources
 			var files = new List<FileInfo>();
-			var workingDirectoryUri = new Uri(string.Format("{0}/", Environment.CurrentDirectory), UriKind.Absolute);
 			foreach (var file in options.Sources) {
 				if (Path.IsPathRooted(file))
 					files.Add(new FileInfo(file));
