@@ -55,6 +55,45 @@ namespace BlobUtility
 				return 0;
 			}
 
+			// Download?
+			if (options.Download) {
+				var downloads = options.Sources.ToList();
+				_log.Info(string.Format("Downloading {0} file(s)", downloads.Count));
+
+				foreach (var download in downloads) {
+					var blob = container.GetBlobReference(download);
+					blob.FetchAttributes();
+
+					_log.Info(string.Format("Found Blob: {0}", blob.Uri));
+
+					// Does this file exist locally?
+					var localFilename = Path.GetFileName(blob.Name);
+					if (localFilename == null)
+						throw new ArgumentException(string.Format("Could not resolve Blob name: {0}", blob.Uri));
+
+					// Prepend Directory if provided
+					var saveDirectory = options.Directory;
+					if (!string.IsNullOrEmpty(saveDirectory))
+						localFilename = Path.Combine(saveDirectory, localFilename);
+
+					// Ignore existing files if required
+					if (!options.Force && File.Exists(localFilename)) {
+						_log.Warn(string.Format("Local file {0} already exists; skipping download", localFilename));
+						continue;
+					}
+
+					// Create directory if required
+					if (!string.IsNullOrEmpty(saveDirectory) && !Directory.Exists(saveDirectory))
+						Directory.CreateDirectory(saveDirectory);
+
+					// Download Blob
+					blob.DownloadToFile(localFilename);
+					_log.Info(string.Format("Saved Blob: {0} ({1} bytes)", localFilename, blob.Attributes.Properties.Length));
+				}
+
+				return 0;
+			}
+
 			// Resolve Sources
 			var files = new List<FileInfo>();
 			foreach (var file in options.Sources) {

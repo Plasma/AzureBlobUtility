@@ -23,7 +23,10 @@ namespace BlobUtility
 		[Option("f", "force", DefaultValue = false, HelpText = "Force overwrite of any existing blobs.")]
 		public bool Force { get; set; }
 
-		[Option(null, "brief", DefaultValue = false, HelpText = "Show minimal backup progress log information.")]
+		[Option(null, "download", DefaultValue = false, HelpText = "Download the specified source file instead of uploading.")]
+		public bool Download { get; set; }
+
+		[Option(null, "brief", DefaultValue = false, HelpText = "Show minimal log information.")]
 		public bool Brief { get; set; }
 
 		[Option(null, "getDefaultServiceVersion", DefaultValue = false, HelpText = "Display the current default Service (API) Version for the storage service.")]
