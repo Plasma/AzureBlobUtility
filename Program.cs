@@ -12,7 +12,7 @@ namespace BlobUtility
 {
 	class Program
 	{
-		static readonly ILog _log = LogManager.GetLogger(typeof (Program));
+		static readonly ILog Log = LogManager.GetLogger(typeof (Program));
 
 		static int Main(string[] args)
 		{
@@ -33,8 +33,8 @@ namespace BlobUtility
 			// Fetch API Version?
 			if (options.GetApiVersion) {
 				var properties = client.GetServiceProperties();
-				_log.Info("Service Properties:");
-				_log.Info(string.Format("Default Service (API) Version: {0}", properties.DefaultServiceVersion));
+				Log.Info("Service Properties:");
+				Log.Info(string.Format("Default Service (API) Version: {0}", properties.DefaultServiceVersion));
 				return 0;
 			}
 
@@ -42,10 +42,10 @@ namespace BlobUtility
 			if (!string.IsNullOrEmpty(options.SetApiVersion)) {
 				var properties = client.GetServiceProperties();
 				var version = options.SetApiVersion == "reset" ? null : options.SetApiVersion;
-				_log.Info(string.Format("Updating API Version from {0} to {1}", properties.DefaultServiceVersion, version));
+				Log.Info(string.Format("Updating API Version from {0} to {1}", properties.DefaultServiceVersion, version));
 				properties.DefaultServiceVersion = version;
 				client.SetServiceProperties(properties);
-				_log.Info("Updated Ok");
+				Log.Info("Updated Ok");
 				return 0;
 			}
 
@@ -58,13 +58,13 @@ namespace BlobUtility
 			// Download?
 			if (options.Download) {
 				var downloads = options.Sources.ToList();
-				_log.Info(string.Format("Downloading {0} file(s)", downloads.Count));
+				Log.Info(string.Format("Downloading {0} file(s)", downloads.Count));
 
 				foreach (var download in downloads) {
 					var blob = container.GetBlobReference(download);
 					blob.FetchAttributes();
 
-					_log.Info(string.Format("Found Blob: {0}", blob.Uri));
+					Log.Info(string.Format("Found Blob: {0}", blob.Uri));
 
 					// Does this file exist locally?
 					var localFilename = Path.GetFileName(blob.Name);
@@ -78,7 +78,7 @@ namespace BlobUtility
 
 					// Ignore existing files if required
 					if (!options.Force && File.Exists(localFilename)) {
-						_log.Warn(string.Format("Local file {0} already exists; skipping download", localFilename));
+						Log.Warn(string.Format("Local file {0} already exists; skipping download", localFilename));
 						continue;
 					}
 
@@ -88,7 +88,7 @@ namespace BlobUtility
 
 					// Download Blob
 					blob.DownloadToFile(localFilename);
-					_log.Info(string.Format("Saved Blob: {0} ({1} bytes)", localFilename, blob.Attributes.Properties.Length));
+					Log.Info(string.Format("Saved Blob: {0} ({1} bytes)", localFilename, blob.Attributes.Properties.Length));
 				}
 
 				return 0;
@@ -104,7 +104,7 @@ namespace BlobUtility
 			}
 
 			// Perform Upload
-			_log.Info(string.Format("Uploading {0} file(s)", files.Count));
+			Log.Info(string.Format("Uploading {0} file(s)", files.Count));
 			foreach(var fileInfo in files) {
 				// Calculate Paths
 				var directory = fileInfo.Directory;
@@ -136,11 +136,11 @@ namespace BlobUtility
 					}
 				}
 
-				_log.Info(string.Format("Uploading {0} to {1}", fileInfo, uploadPath));
+				Log.Info(string.Format("Uploading {0} to {1}", fileInfo, uploadPath));
 				blob.UploadFile(fileInfo.FullName);
 			}
 
-			_log.Info("Finished uploading");
+			Log.Info("Finished uploading");
 			return 0;
 		}
 
