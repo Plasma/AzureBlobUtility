@@ -87,7 +87,7 @@ namespace BlobUtility
 						Directory.CreateDirectory(saveDirectory);
 
 					// Download Blob
-					blob.DownloadToFile(localFilename);
+					blob.DownloadToFile(localFilename, CreateBlobRequestOptionsWithMaxTimeout());
 					Log.Info(string.Format("Saved Blob: {0} ({1} bytes)", localFilename, blob.Attributes.Properties.Length));
 				}
 
@@ -137,11 +137,17 @@ namespace BlobUtility
 				}
 
 				Log.Info(string.Format("Uploading {0} to {1}", fileInfo, uploadPath));
-				blob.UploadFile(fileInfo.FullName);
+				blob.UploadFile(fileInfo.FullName, CreateBlobRequestOptionsWithMaxTimeout());
 			}
 
 			Log.Info("Finished uploading");
 			return 0;
+		}
+
+		static BlobRequestOptions CreateBlobRequestOptionsWithMaxTimeout()
+		{
+			// There appears to be a maximum value we can supply for a requested timeout
+			return new BlobRequestOptions {Timeout = TimeSpan.FromHours(6)};
 		}
 
 		static void ConfigureLogging(bool verbose)
