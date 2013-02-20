@@ -1,7 +1,7 @@
 AzureBlobUtility
 ================
 
-Simple command line script to upload blobs to Azure Blob Storage.
+Simple command line script to upload, download and manage blobs in Windows Azure Blob Storage.
 
 Example:
 =
