@@ -26,6 +26,9 @@ namespace BlobUtility
 		[Option("download", DefaultValue = false, HelpText = "Download the specified source file instead of uploading.")]
 		public bool Download { get; set; }
 
+		[Option('l', "links", DefaultValue = false, HelpText = "Generate Download Links for matching files instead of uploading.")]
+		public bool Links { get; set; }
+
 		[Option("brief", DefaultValue = false, HelpText = "Show minimal log information.")]
 		public bool Brief { get; set; }
 

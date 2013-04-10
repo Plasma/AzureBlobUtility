@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Web;
 using CommandLine;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.StorageClient;
@@ -12,6 +13,7 @@ namespace BlobUtility
 {
 	class Program
 	{
+		const string DownloadPolicyName = "readonly-private";
 		static readonly ILog Log = LogManager.GetLogger(typeof (Program));
 
 		static int Main(string[] args)
@@ -52,6 +54,32 @@ namespace BlobUtility
 			// Source is Required
 			if (options.Sources == null) {
 				Console.WriteLine(options.GetUsage());
+				return 0;
+			}
+
+			// Scan for Links?
+			if (options.Links) {
+				// Assign Container Permission
+				Log.Info(string.Format("Applying protected download policy '{0}' on container '{1}'", DownloadPolicyName, container.Name));
+				AssignDownloadPolicyContainerPermissions(container);
+
+				var sources = options.Sources.ToList();
+				Log.Info(string.Format("Fetching links for {0} file(s)", sources.Count));
+
+				// Header
+				foreach (var file in sources) {
+					var blob = container.GetBlobReference(file);
+					blob.FetchAttributes();
+
+					// Generate Link
+					var downloadUrl = GetDownloadUrlFor(blob);
+
+					// Print Result
+					Log.Info(string.Empty);
+					Log.Info(string.Format("Blob: {0}", blob.Uri));
+					Log.Info(string.Format("Url: {0}", downloadUrl));
+				}
+
 				return 0;
 			}
 
@@ -165,6 +193,35 @@ namespace BlobUtility
 			}
 
 			log4net.Config.BasicConfigurator.Configure(consoleAppender);
+		}
+
+		/// <summary>
+		/// Return a secret, persistent Download Url for a given Blob
+		/// </summary>
+		static string GetDownloadUrlFor(CloudBlob blob)
+		{
+			var signature = blob.GetSharedAccessSignature(new SharedAccessPolicy
+			{
+				SharedAccessExpiryTime = new DateTime(2050, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+			}, DownloadPolicyName);
+
+			return string.Format("{0}{1}", blob.Uri.ToString().Replace(" ", "%20"), signature);
+		}
+
+		/// <summary>
+		/// Assign permissions for a download to occur for our readonly permission policy
+		/// </summary>
+		static void AssignDownloadPolicyContainerPermissions(CloudBlobContainer container)
+		{
+			// Secure storage. We will provide read tokens for access to blob data on a per-blob basis.
+			var containerPermissions = new BlobContainerPermissions();
+			containerPermissions.PublicAccess = BlobContainerPublicAccessType.Off;
+			containerPermissions.SharedAccessPolicies.Add(DownloadPolicyName, new SharedAccessPolicy
+			{
+				Permissions = SharedAccessPermissions.Read
+			});
+
+			container.SetPermissions(containerPermissions);
 		}
 	}
 }
