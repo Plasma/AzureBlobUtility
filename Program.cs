@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
 using CommandLine;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.StorageClient;
 using log4net;
 using log4net.Filter;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace BlobUtility
 {
@@ -27,7 +27,7 @@ namespace BlobUtility
 			ConfigureLogging(options.Brief);
 
 			// Fetch References
-			var credentials = new StorageCredentialsAccountAndKey(options.Account, options.Key);
+			var credentials = new StorageCredentials(options.Account, options.Key);
 			var account = new CloudStorageAccount(credentials, true);
 			var client = account.CreateCloudBlobClient();
 			var container = client.GetContainerReference(options.Container);
@@ -68,7 +68,7 @@ namespace BlobUtility
 
 				// Header
 				foreach (var file in sources) {
-					var blob = container.GetBlobReference(file);
+					var blob = container.GetBlockBlobReference(file);
 					blob.FetchAttributes();
 
 					// Generate Link
@@ -89,7 +89,7 @@ namespace BlobUtility
 				Log.Info(string.Format("Downloading {0} file(s)", downloads.Count));
 
 				foreach (var download in downloads) {
-					var blob = container.GetBlobReference(download);
+					var blob = container.GetBlockBlobReference(download);
 					blob.FetchAttributes();
 
 					Log.Info(string.Format("Found Blob: {0}", blob.Uri));
@@ -115,8 +115,8 @@ namespace BlobUtility
 						Directory.CreateDirectory(saveDirectory);
 
 					// Download Blob
-					blob.DownloadToFile(localFilename, CreateBlobRequestOptionsWithMaxTimeout());
-					Log.Info(string.Format("Saved Blob: {0} ({1} bytes)", localFilename, blob.Attributes.Properties.Length));
+					blob.DownloadToFile(localFilename, FileMode.OpenOrCreate);
+				    Log.Info(string.Format("Saved Blob: {0}", localFilename));
 				}
 
 				return 0;
@@ -149,7 +149,7 @@ namespace BlobUtility
 					uploadPath = options.Directory;
 				}
 
-				var blob = container.GetBlobReference(uploadPath);
+				var blob = container.GetBlockBlobReference(uploadPath);
 
 				// Blob existance check?
 				if (!options.Force) {
@@ -159,13 +159,19 @@ namespace BlobUtility
 
 						// If this succeeded, our Blob already exists
 						throw new ArgumentException(string.Format("Blob already exists: {0}", uploadPath));
-					} catch (StorageClientException) {
+					} catch (StorageException) {
 						// Ignored - Blob does not exist
 					}
 				}
 
 				Log.Info(string.Format("Uploading {0} to {1}", fileInfo, uploadPath));
-				blob.UploadFile(fileInfo.FullName, CreateBlobRequestOptionsWithMaxTimeout());
+
+			    if (!string.IsNullOrWhiteSpace(options.ContentType))
+			    {
+			        blob.Properties.ContentType = options.ContentType;
+			    }
+
+				blob.UploadFromFile(fileInfo.FullName, FileMode.OpenOrCreate);
 			}
 
 			Log.Info("Finished uploading");
@@ -175,7 +181,7 @@ namespace BlobUtility
 		static BlobRequestOptions CreateBlobRequestOptionsWithMaxTimeout()
 		{
 			// There appears to be a maximum value we can supply for a requested timeout
-			return new BlobRequestOptions {Timeout = TimeSpan.FromHours(6)};
+		    return new BlobRequestOptions {ServerTimeout = TimeSpan.FromHours(6)};
 		}
 
 		static void ConfigureLogging(bool verbose)
@@ -198,12 +204,12 @@ namespace BlobUtility
 		/// <summary>
 		/// Return a secret, persistent Download Url for a given Blob
 		/// </summary>
-		static string GetDownloadUrlFor(CloudBlob blob)
+		static string GetDownloadUrlFor(ICloudBlob blob)
 		{
-			var signature = blob.GetSharedAccessSignature(new SharedAccessPolicy
-			{
-				SharedAccessExpiryTime = new DateTime(2050, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-			}, DownloadPolicyName);
+		    var signature = blob.GetSharedAccessSignature(new SharedAccessBlobPolicy
+		    {
+		        SharedAccessExpiryTime = new DateTime(2050, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+		    }, DownloadPolicyName);
 
 			return string.Format("{0}{1}", blob.Uri.ToString().Replace(" ", "%20"), signature);
 		}
@@ -216,10 +222,10 @@ namespace BlobUtility
 			// Secure storage. We will provide read tokens for access to blob data on a per-blob basis.
 			var containerPermissions = new BlobContainerPermissions();
 			containerPermissions.PublicAccess = BlobContainerPublicAccessType.Off;
-			containerPermissions.SharedAccessPolicies.Add(DownloadPolicyName, new SharedAccessPolicy
-			{
-				Permissions = SharedAccessPermissions.Read
-			});
+		    containerPermissions.SharedAccessPolicies.Add(DownloadPolicyName, new SharedAccessBlobPolicy
+		    {
+		        Permissions = SharedAccessBlobPermissions.Read
+		    });
 
 			container.SetPermissions(containerPermissions);
 		}
