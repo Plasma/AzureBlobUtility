@@ -38,7 +38,7 @@ namespace BlobUtility
 		[Option("setDefaultServiceVersion", DefaultValue = null, HelpText = "Change the default Service (API) Version for the storage service.")]
 		public string SetApiVersion { get; set; }
         
-        [Option("t", DefaultValue = null, HelpText = "Specifies the file Content-Type")]
+        [Option('t', "contenttype", DefaultValue = null, HelpText = "Specifies the file Content-Type")]
         public string ContentType { get; set; }
 
 		[HelpOption]

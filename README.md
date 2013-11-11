@@ -6,7 +6,7 @@ Simple command line script to upload, download and manage blobs in Windows Azure
 Example:
 =
 ```
-BlobUtility.exe -k AccessKey -a AccountName -c ContainerName -s UploadThisFile.txt -d SomeFolder/SaveAsThis.txt
+BlobUtility.exe -k AccessKey -a AccountName -c ContainerName -s UploadThisFile.txt -d SomeFolder/SaveAsThis.txt -t text/plain
 ```
 
 You may also change the Default Service (API) Version using this utility:
@@ -35,6 +35,8 @@ Copyright © Andrew Armstrong 2012
                                 upload to.
 
   -f, --force                   Force overwrite of any existing blobs.
+
+  -t, --contenttype             Specifies the file content type
 
   --brief                       Show minimal backup progress log information.
 
