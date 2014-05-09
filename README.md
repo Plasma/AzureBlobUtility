@@ -20,7 +20,7 @@ Usage:
 =
 ```
 BlobUtility 1.0.0
-Copyright c Andrew Armstrong 2012
+Copyright © Andrew Armstrong 2012
 
   -k, --key                     Required. Blob storage Access Key.
 
