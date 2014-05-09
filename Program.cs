@@ -166,10 +166,25 @@ namespace BlobUtility
 
 				Log.Info(string.Format("Uploading {0} to {1}", fileInfo, uploadPath));
 
-			    if (!string.IsNullOrWhiteSpace(options.ContentType))
-			    {
-			        blob.Properties.ContentType = options.ContentType;
-			    }
+				if (!string.IsNullOrWhiteSpace(options.ContentType))
+				{
+					blob.Properties.ContentType = options.ContentType;
+				}
+
+				if (!string.IsNullOrWhiteSpace(options.ContentEncoding))
+				{
+					blob.Properties.ContentEncoding = options.ContentEncoding;
+				}
+
+				if (!string.IsNullOrWhiteSpace(options.ContentLanguage))
+				{
+					blob.Properties.ContentLanguage = options.ContentLanguage;
+				}
+
+				if (!string.IsNullOrWhiteSpace(options.CacheControl))
+				{
+					blob.Properties.CacheControl = options.CacheControl;
+				}
 
 				blob.UploadFromFile(fileInfo.FullName, FileMode.OpenOrCreate);
 			}
