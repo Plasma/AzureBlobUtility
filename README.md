@@ -36,7 +36,13 @@ Copyright © Andrew Armstrong 2012
 
   -f, --force                   Force overwrite of any existing blobs.
 
-  -t, --contenttype             Specifies the file content type
+  -t, --contenttype             Specifies the file content type.
+
+  --contentencoding             Specifies the file content encoding.
+
+  --contentlanguage             Specifies the file content language.
+
+  --cachecontrol                Specifies the file cache control.
 
   --brief                       Show minimal backup progress log information.
 

@@ -38,8 +38,17 @@ namespace BlobUtility
 		[Option("setDefaultServiceVersion", DefaultValue = null, HelpText = "Change the default Service (API) Version for the storage service.")]
 		public string SetApiVersion { get; set; }
         
-        [Option('t', "contenttype", DefaultValue = null, HelpText = "Specifies the file Content-Type")]
-        public string ContentType { get; set; }
+		[Option('t', "contenttype", DefaultValue = null, HelpText = "Specifies the file Content-Type")]
+		public string ContentType { get; set; }
+
+		[Option("contentencoding", DefaultValue = null, HelpText = "Specifies the file Content-Encoding")]
+		public string ContentEncoding { get; set; }
+
+		[Option("contentlanguage", DefaultValue = null, HelpText = "Specifies the file Content-Language")]
+		public string ContentLanguage { get; set; }
+
+		[Option("cachecontrol", DefaultValue = null, HelpText = "Specifies the file Cache-Control")]
+		public string CacheControl { get; set; }
 
 		[HelpOption]
 		public string GetUsage()
