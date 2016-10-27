@@ -14,7 +14,7 @@ You may also change the Default Service (API) Version using this utility:
 BlobUtility.exe -k AccessKey -a AccountName -c ContainerName --setDefaultServiceVersion 2012-02-12
 ```
 
-You may want to leverage this tool for other national cloud, for example China Azure. Please specify "--env" to "China Azure" or "Mooncake"
+You may want to leverage this tool for other national cloud, for example China Azure. Please specify "--env" to "China Azure" or "Mooncake":
 ```
 BlobUtility.exe -k AccessKey -a AccountName -c ContainerName -e "China Azure" --setDefaultServiceVersion 2012-02-12
 ```
@@ -38,6 +38,9 @@ Copyright © Andrew Armstrong 2012
 
   -d, --destination             Specifies the destination filename/directory to
                                 upload to.
+
+  -e, --env						Specify Cloud Environment. Default is Global Azure.
+								Set to "China Azure" for Mooncake".
 
   -f, --force                   Force overwrite of any existing blobs.
 
