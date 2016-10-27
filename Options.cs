@@ -50,7 +50,10 @@ namespace BlobUtility
 		[Option("cachecontrol", DefaultValue = null, HelpText = "Specifies the file Cache-Control")]
 		public string CacheControl { get; set; }
 
-		[HelpOption]
+        [Option('e', "env", HelpText = "Specify Cloud Environment. Default is Global Azure. Set to \"China Azure\" for Mooncake", Required = false)]
+        public string Environment { get; set; }
+
+        [HelpOption]
 		public string GetUsage()
 		{
 			return HelpText.AutoBuild(this, current => HelpText.DefaultParsingErrorsHandler(this, current));

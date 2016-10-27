@@ -14,6 +14,11 @@ You may also change the Default Service (API) Version using this utility:
 BlobUtility.exe -k AccessKey -a AccountName -c ContainerName --setDefaultServiceVersion 2012-02-12
 ```
 
+You may want to leverage this tool for other national cloud, for example China Azure. Please specify "--env" to "China Azure" or "Mooncake"
+```
+BlobUtility.exe -k AccessKey -a AccountName -c ContainerName -e "China Azure" --setDefaultServiceVersion 2012-02-12
+```
+
 See http://msdn.microsoft.com/en-us/library/windowsazure/dd894041 for a list of API Versions.
 
 Usage:
