@@ -27,8 +27,23 @@ namespace BlobUtility
 			ConfigureLogging(options.Brief);
 
 			// Fetch References
+            // add support to china azure
 			var credentials = new StorageCredentials(options.Account, options.Key);
-			var account = new CloudStorageAccount(credentials, true);
+            CloudStorageAccount account;
+            if (options.Environment == "mc" || options.Environment.ToLower() == "china azure" || options.Environment.ToLower() == "mooncake")
+            {
+                account = new CloudStorageAccount(
+                    credentials,
+                    new Uri("https://" + (options.Account).Trim() + ".blob.core.chinacloudapi.cn/"),
+                    new Uri("https://" + (options.Account).Trim() + ".table.core.chinacloudapi.cn/"),
+                    new Uri("https://" + (options.Account).Trim() + ".queue.core.chinacloudapi.cn/")
+                );
+            }
+            else
+            {
+                account = new CloudStorageAccount(credentials, true);
+            }
+
 			var client = account.CreateCloudBlobClient();
 			var container = client.GetContainerReference(options.Container);
 
