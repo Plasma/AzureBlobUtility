@@ -30,17 +30,15 @@ namespace BlobUtility
             // add support to china azure
 			var credentials = new StorageCredentials(options.Account, options.Key);
             CloudStorageAccount account;
-            if (options.Environment == "mc" || options.Environment.ToLower() == "china azure" || options.Environment.ToLower() == "mooncake")
-            {
+			var isAzureChina = options.Environment != null && (options.Environment == "mc" || options.Environment.ToLower() == "china azure" || options.Environment.ToLower() == "mooncake");
+			if (isAzureChina) {
                 account = new CloudStorageAccount(
                     credentials,
                     new Uri("https://" + (options.Account).Trim() + ".blob.core.chinacloudapi.cn/"),
                     new Uri("https://" + (options.Account).Trim() + ".table.core.chinacloudapi.cn/"),
                     new Uri("https://" + (options.Account).Trim() + ".queue.core.chinacloudapi.cn/")
                 );
-            }
-            else
-            {
+            } else {
                 account = new CloudStorageAccount(credentials, true);
             }
 
